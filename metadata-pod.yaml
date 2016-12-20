@@ -1,0 +1,50 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    release: 'stable'
+    environment: 'pre-prod'
+    relationship: 'child'
+    dmzbased: 'false'
+    tier: 'front1'
+  name: downward-api-pod
+  annotations:
+    example.com/skipValidation: 'true'
+    example.com/MD5Checksum: '23798FGH'
+    example.com/BUILDDATE: '3479845'
+spec:
+  containers:
+    - name: volume-test-container
+      image: gcr.io/google_containers/busybox
+      command: ["sh", "-cx", "cat /etc/labels /etc/annotations;env"]
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "125m"
+        limits:
+          memory: "64Mi"
+          cpu: "250m"
+      volumeMounts:
+        - name: podinfo
+          mountPath: /etc
+          readOnly: false
+      env:
+        - name: MIN_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: requests.memory
+        - name: MAX_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+  volumes:
+    - name: podinfo
+      metadata:
+        items:
+          - name: "labels"
+            fieldRef:
+              fieldPath: metadata.labels
+          - name: "annotations"
+            fieldRef:
+              fieldPath: metadata.annotations
+  restartPolicy: Never
